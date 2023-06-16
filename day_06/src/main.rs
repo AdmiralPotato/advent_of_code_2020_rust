@@ -28,9 +28,9 @@ fn main() {
 
     let mut total = 0;
     for group in groups {
-        let mut group_total = 0;
+        let mut group_total = u32::MAX;
         for line in group.trim().split("\n") {
-            group_total |= parse_line(line.trim());
+            group_total &= parse_line(line.trim());
         }
         let group_total_value = group_total.count_ones();
         println!("group_total_value:{group_total_value}");
