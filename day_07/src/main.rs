@@ -3,13 +3,13 @@ use std::{collections::HashMap, fmt::Result, fs::File, io::Read};
 
 struct Bag<'a> {
     name: &'a str,
-    count_a: &'a str,
+    count_a: u8,
     label_a: &'a str,
-    count_b: &'a str,
+    count_b: u8,
     label_b: &'a str,
-    count_c: &'a str,
+    count_c: u8,
     label_c: &'a str,
-    count_d: &'a str,
+    count_d: u8,
     label_d: &'a str,
 }
 impl<'a> Bag<'a> {
@@ -20,13 +20,29 @@ impl<'a> Bag<'a> {
         // println!("text: {text}, matches: {matches}");
         let captures = crime.captures(text).unwrap();
         let name = captures.name("name").map_or("", |m| m.as_str());
-        let count_a = captures.name("count_a").map_or("", |m| m.as_str());
+        let count_a = captures
+            .name("count_a")
+            .map_or("0", |m| m.as_str())
+            .parse::<u8>()
+            .unwrap();
         let label_a = captures.name("label_a").map_or("", |m| m.as_str());
-        let count_b = captures.name("count_b").map_or("", |m| m.as_str());
+        let count_b = captures
+            .name("count_b")
+            .map_or("0", |m| m.as_str())
+            .parse::<u8>()
+            .unwrap();
         let label_b = captures.name("label_b").map_or("", |m| m.as_str());
-        let count_c = captures.name("count_c").map_or("", |m| m.as_str());
+        let count_c = captures
+            .name("count_c")
+            .map_or("0", |m| m.as_str())
+            .parse::<u8>()
+            .unwrap();
         let label_c = captures.name("label_c").map_or("", |m| m.as_str());
-        let count_d = captures.name("count_d").map_or("", |m| m.as_str());
+        let count_d = captures
+            .name("count_d")
+            .map_or("0", |m| m.as_str())
+            .parse::<u8>()
+            .unwrap();
         let label_d = captures.name("label_d").map_or("", |m| m.as_str());
         // println!("name: '{name}' | count_a: '{count_a}' | label_a: '{label_a}' | count_a: '{count_b}' | label_a: '{label_b}'");
 
@@ -44,6 +60,29 @@ impl<'a> Bag<'a> {
     }
 }
 
+fn recurse_totals(name: &str, bag_map: &HashMap<&str, Bag>) -> usize {
+    let bag = bag_map.get(name).unwrap();
+    let mut result: usize = 1;
+    // println!("&entry.1.name: {:?}", &entry.1.name);
+    if bag.label_a != "" {
+        let contents = recurse_totals(&bag.label_a, bag_map);
+        result += bag.count_a as usize * contents;
+    }
+    if bag.label_b != "" {
+        let contents = recurse_totals(&bag.label_b, bag_map);
+        result += bag.count_b as usize * contents;
+    }
+    if bag.label_c != "" {
+        let contents = recurse_totals(&bag.label_c, bag_map);
+        result += bag.count_c as usize * contents;
+    }
+    if bag.label_d != "" {
+        let contents = recurse_totals(&bag.label_d, bag_map);
+        result += bag.count_d as usize * contents;
+    }
+    result
+}
+
 fn main() {
     let mut infile = File::open("./day_07/input.txt").expect("could not find file");
     let mut whole_file = String::new();
@@ -52,48 +91,20 @@ fn main() {
         .expect("could not read file");
     let mut bag_map = HashMap::new();
     let lines = whole_file.trim().split("\n");
-    let mut results = Vec::<&str>::new();
-    let mut current_search = Vec::<&str>::new();
+    let mut result = 0;
     for line in lines {
         let bag = Bag::new(line);
-        if bag.label_a == "shiny gold"
-            || bag.label_b == "shiny gold"
-            || bag.label_c == "shiny gold"
-            || bag.label_d == "shiny gold"
-        {
-            // results.push(bag.name);
-            current_search.push(bag.name);
-        }
         bag_map.insert(bag.name, bag);
     }
-    let mut keep_going = true;
-    while keep_going {
-        let mut next_search = Vec::<&str>::new();
-        for entry in &bag_map {
-            // println!("&entry.1.name: {:?}", &entry.1.name);
-            if !results.contains(&entry.1.name)
-                && !next_search.contains(&entry.1.name)
-                && !current_search.contains(&entry.1.name)
-                && (current_search.contains(&entry.1.label_a)
-                    || current_search.contains(&entry.1.label_b)
-                    || current_search.contains(&entry.1.label_c)
-                    || current_search.contains(&entry.1.label_d))
-            {
-                println!("Term added: {:?}", &entry.1.name);
-                next_search.push(&entry.1.name);
-            }
-        }
-        println!("next_search: {:?}", next_search);
-        println!("current_search: {:?}", current_search);
-        results = [results, current_search].concat();
-        println!("results: {:?}", results);
-        keep_going = next_search.len() > 0;
-        current_search = next_search;
-    }
+
+    result += recurse_totals("shiny gold", &bag_map);
+
     println!("----- LOOP OVER ------");
     println!("bag_map.keys().len(): {:?}", bag_map.keys().len());
-    println!("current_search: {:?}", current_search);
-    println!("results: {:?}", results);
-    // 11 is not the right answer
-    println!("results.len(): {}", results.len());
+    // 150 is too low.
+    // 5957 is too high.
+    // 5956 is correct.
+    // It took seeing that both sample1 and sample2 were both larger by 1.
+    // the minus 1 is because I suppose I'm counting the root bag twice.
+    println!("result: {:?}", result - 1);
 }
