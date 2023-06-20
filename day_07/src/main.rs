@@ -12,8 +12,8 @@ struct Bag<'a> {
     count_d: u8,
     label_d: &'a str,
 }
-impl<'a> Bag<'a> {
-    fn new(text: &'a str) -> Self {
+impl Bag<'_> {
+    fn new(text: &str) -> Bag<'_> {
         // this is the worst regex I have ever had to write
         let crime = Regex::new(r"(?P<name>.*) bags contain ((?P<count_a>\d*) (?P<label_a>\w* \w*) bag[s]{0,1}[,]{0,1}|no other bags)( (?P<count_b>\d*) (?P<label_b>\w* \w*) bag[s]{0,1}[,]{0,1}|no other bags){0,1}( (?P<count_c>\d*) (?P<label_c>\w* \w*) bag[s]{0,1}[,]{0,1}|no other bags){0,1}( (?P<count_d>\d*) (?P<label_d>\w* \w*) bag[s]{0,1}[,]{0,1}|no other bags){0,1}").unwrap();
         let matches = crime.is_match(text);
