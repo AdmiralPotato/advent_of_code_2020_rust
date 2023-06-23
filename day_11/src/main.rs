@@ -4,6 +4,8 @@ use std::{
     io::Read,
 };
 
+use rayon::prelude::*;
+
 #[derive(PartialEq)]
 struct Board {
     seats: Vec<char>,
@@ -39,7 +41,6 @@ impl Board {
 
     pub fn get_neighbor_count(&self, index: usize) -> u8 {
         let width = self.width;
-        let state = &self.seats;
         let row = index / width;
         let col = index % width;
         let mut result: u8 = 0;
@@ -83,12 +84,12 @@ impl Board {
     }
 
     pub fn count_occupied_seats(&self) -> usize {
-        let result: usize = self.seats.iter().fold(0, |acc: usize, c: &char| {
-            acc + match c {
-                '#' => 1,
-                _ => 0,
-            }
-        });
+        let result: usize = self
+            .seats
+            .par_iter()
+            .cloned()
+            .map(seat_char_to_usize)
+            .reduce(|| 0, |a, b| a + b);
         return result;
     }
 
@@ -111,6 +112,13 @@ impl Board {
 }
 
 fn seat_char_to_u8(seat: char) -> u8 {
+    return match seat {
+        '#' => 1,
+        _ => 0,
+    };
+}
+
+fn seat_char_to_usize(seat: char) -> usize {
     return match seat {
         '#' => 1,
         _ => 0,
