@@ -1,14 +1,15 @@
-use std::{fmt::Result as FmtResult, fs::File, io::Read};
+use std::{fs::File, io::Read};
 
+#[repr(i32)]
 #[derive(PartialEq, Clone, Copy, Debug)]
 enum Direction {
-    East,
-    South,
-    West,
-    North,
+    East = 0,
+    South = 90,
+    West = 180,
+    North = 270,
 }
 
-#[derive(PartialEq, Clone, Debug)]
+#[derive(PartialEq, Clone, Copy, Debug)]
 struct Ship {
     direction: Direction,
     x: i32,
@@ -16,12 +17,7 @@ struct Ship {
 }
 
 fn get_relative_direction(current: Direction, value: i32) -> Direction {
-    let start: i32 = match current {
-        Direction::East => 0,
-        Direction::South => 90,
-        Direction::West => 180,
-        Direction::North => 270,
-    };
+    let start: i32 = current as i32;
 
     let new = (start + value + 360) % 360;
     match new {
@@ -29,7 +25,7 @@ fn get_relative_direction(current: Direction, value: i32) -> Direction {
         90 => Direction::South,
         180 => Direction::West,
         270 => Direction::North,
-        x => panic!("invalid direction! {x}"),
+        _ => panic!("invalid direction! {new}"),
     }
 }
 fn move_relative(ship: &mut Ship, value: i32) {
@@ -53,7 +49,7 @@ impl Ship {
         let mut chars = text.chars().into_iter();
         let instruction: char = chars.next().expect("Cannot read instruction");
         let value: i32 = chars.as_str().parse().expect("Unable to parse value");
-        let mut new_state = self.clone();
+        let mut new_state = *self;
         match instruction {
             'N' => new_state.y -= value,
             'E' => new_state.x += value,
@@ -62,7 +58,7 @@ impl Ship {
             'L' => new_state.direction = get_relative_direction(new_state.direction, -value),
             'R' => new_state.direction = get_relative_direction(new_state.direction, value),
             'F' => move_relative(&mut new_state, value),
-            x => panic!("Invalid instruction! '{x}'"),
+            x => panic!("Invalid instruction! '{}'", x),
         }
         return new_state;
     }
@@ -125,6 +121,6 @@ F11
     }
     #[test]
     fn whole_enchilada() {
-        assert_eq!(puzzle_part_1(SAMPLE), 25, "whole_enchilada");
+        assert_eq!(puzzle_part_1(SAMPLE), 25);
     }
 }

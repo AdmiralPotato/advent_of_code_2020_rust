@@ -1,6 +1,6 @@
-use std::{fmt::Result as FmtResult, fs::File, io::Read};
+use std::{fs::File, io::Read};
 
-#[derive(PartialEq, Clone, Debug)]
+#[derive(PartialEq, Clone, Copy, Debug)]
 struct Ship {
     x: i32,
     y: i32,
@@ -12,28 +12,15 @@ fn update_direction(ship: &mut Ship, value: i32) {
     let angle = (value + 360) % 360;
     match angle {
         0 => (),
-        90 => {
-            let temp = ship.waypoint_y;
-            ship.waypoint_y = ship.waypoint_x;
-            ship.waypoint_x = -temp;
-        }
-        180 => {
-            ship.waypoint_x = -ship.waypoint_x;
-            ship.waypoint_y = -ship.waypoint_y;
-        }
-        270 => {
-            let temp = ship.waypoint_x;
-            ship.waypoint_x = ship.waypoint_y;
-            ship.waypoint_y = -temp;
-        }
-        x => panic!("invalid direction! {x}"),
+        90 => (ship.waypoint_x, ship.waypoint_y) = (-ship.waypoint_y, ship.waypoint_x),
+        180 => (ship.waypoint_x, ship.waypoint_y) = (-ship.waypoint_x, -ship.waypoint_y),
+        270 => (ship.waypoint_x, ship.waypoint_y) = (ship.waypoint_y, -ship.waypoint_x),
+        _ => panic!("invalid direction! {angle}"),
     }
 }
 fn move_relative(ship: &mut Ship, value: i32) {
-    for _ in 0..value {
-        ship.x += ship.waypoint_x;
-        ship.y += ship.waypoint_y;
-    }
+    ship.x += ship.waypoint_x * value;
+    ship.y += ship.waypoint_y * value;
 }
 
 impl Ship {
@@ -58,7 +45,7 @@ impl Ship {
             'L' => update_direction(&mut new_state, -value),
             'R' => update_direction(&mut new_state, value),
             'F' => move_relative(&mut new_state, value),
-            x => panic!("Invalid instruction! '{x}'"),
+            _ => panic!("Invalid instruction! '{instruction}'"),
         }
         return new_state;
     }
