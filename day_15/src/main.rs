@@ -34,10 +34,14 @@ fn part_1(input: &Vec<u32>, steps: u32) -> u32 {
 }
 
 fn main() {
-    let result = part_1(&vec![2, 15, 0, 9, 1, 20], 2020);
-
+    let input = vec![2, 15, 0, 9, 1, 20];
+    let result = part_1(&input, 2020);
     println!("PART 1 SOLUTION!!! {result}");
     // correct answer is 1280
+
+    let result = part_1(&input, 30000000);
+    println!("PART 2 SOLUTION!!! {result}");
+    // correct answer is ???
 }
 
 #[cfg(test)]
