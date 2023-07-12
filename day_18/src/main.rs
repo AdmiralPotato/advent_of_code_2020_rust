@@ -7,15 +7,14 @@ enum Operation {
 }
 impl Display for Operation {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        let result: &str = match self {
-            Operation::Add => "+",
-            Operation::Multiply => "*",
-        };
-        write!(f, "{}", result)
+        match self {
+            Operation::Add => write!(f, "+"),
+            Operation::Multiply => write!(f, "*"),
+        }
     }
 }
 
-fn evaluate_hunk(chars: Vec<char>) -> u64 {
+fn evaluate_hunk(chars: &[char]) -> u64 {
     let mut left = 0;
     let mut operation = Operation::Add;
     println!("WHAT IS MY SEGMENT? {chars:?}");
@@ -57,11 +56,7 @@ fn evaluate_hunk(chars: Vec<char>) -> u64 {
                     })
                     .expect("Unable to find closing parentheses, GAME OVER");
                 i += index_of_closing_paren + 1;
-                let slice_of_chars: Vec<char> = slice_of_chars[..index_of_closing_paren]
-                    .iter()
-                    .map(|x| *x)
-                    .collect();
-                Some(evaluate_hunk(slice_of_chars))
+                Some(evaluate_hunk(&slice_of_chars[..index_of_closing_paren]))
             }
             ')' => panic!("You should NEVER hit a close paren! This should have been sliced out!"),
             x => Some(x.to_string().parse().expect("Cannot parse bad number!")),
@@ -91,7 +86,7 @@ fn puzzle_part_1(input: &str) -> u64 {
     let cleaned = input.trim().replace(" ", "");
     let lines = cleaned.split("\n");
     lines.fold(0, |total, line| {
-        total + evaluate_hunk(line.chars().collect())
+        total + evaluate_hunk(&line.chars().collect::<Vec<char>>())
     })
 }
 
